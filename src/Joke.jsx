@@ -1,12 +1,21 @@
-import useFetch from "./hooks/useFetch";
+import { useQuery } from "react-query";
 
 export default function Joke() {
     const {
         data: joke,
         isLoading,
-        errorMessage,
-    } = useFetch("https://official-joke-api.appspot.com/jokes/random", null);
+        isSuccess,
+    } = useQuery("joke", fetchJoke, {
+        staleTime: 6000,
+        refetchOnWindowFocus: false,
+        retry: false,
+    });
 
+    function fetchJoke() {
+        return fetch("https://official-joke-api.appspot.com/jokes/random").then((response) =>
+            response.json()
+        );
+    }
 
     return (
         <div>
@@ -14,14 +23,14 @@ export default function Joke() {
 
             {isLoading && <div>Loading...</div>}
 
-            {joke && (
+            {isSuccess && (
                 <div>
                     <p>{joke.setup}</p>
                     <p>{joke.punchline}</p>
                 </div>
             )}
 
-            {errorMessage && <div>{errorMessage?.message}</div>}
+            {joke?.type === "error" && <div>{joke.message}</div>}
         </div>
     );
 }
